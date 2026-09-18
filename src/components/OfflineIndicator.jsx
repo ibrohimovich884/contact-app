@@ -1,5 +1,5 @@
 import { WifiOff } from "lucide-react";
-import { useOnlineStatus } from "../hooks/usePWAInstall";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 
 export default function OfflineIndicator() {
   const isOnline = useOnlineStatus();

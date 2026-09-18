@@ -12,6 +12,7 @@ import {
   Share2,
   ChevronDown,
   Sparkles,
+  Check,
 } from "lucide-react";
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
   const [showMoreSocials, setShowMoreSocials] = useState(false);
   const [shimmerKey, setShimmerKey] = useState(0);
   const [isReShimmering, setIsReShimmering] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const triggerCardShimmer = () => {
     setShimmerKey((prev) => prev + 1);
@@ -58,7 +60,8 @@ export default function App() {
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        alert("Sahifa havolasi nusxalandi!");
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2200);
       } catch {
         // ignore
       }
@@ -86,12 +89,12 @@ export default function App() {
         {/* Quick share button at top-right */}
         <button
           id="share-profile-btn"
-          className="card-share-trigger"
+          className={`card-share-trigger ${copiedLink ? "share-copied" : ""}`}
           onClick={handleShareApp}
-          title="Sahifani ulashish"
-          aria-label="Sahifani ulashish"
+          title={copiedLink ? "Havola nusxalandi!" : "Sahifani ulashish"}
+          aria-label={copiedLink ? "Havola nusxalandi!" : "Sahifani ulashish"}
         >
-          <Share2 size={16} />
+          {copiedLink ? <Check size={16} color="#10b981" /> : <Share2 size={16} />}
         </button>
 
         {/* Profile Avatar */}
