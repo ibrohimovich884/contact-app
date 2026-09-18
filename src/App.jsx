@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
-import { SOCIALS_DATA } from "./data/socials";
+import { getStoredData, syncDataWhenOnline } from "./utils/storage";
 import SocialModal from "./components/SocialModal";
 import TouchFeedback from "./components/TouchFeedback";
 import { SocialIcon } from "./components/SocialIcons";
-import OfflineIndicator from "./components/OfflineIndicator";
 import GamesSection from "./components/GamesSection";
 import ProjectsSection from "./components/ProjectsSection";
 import { triggerTapFeedback } from "./utils/feedback";
@@ -16,11 +15,20 @@ import {
 } from "lucide-react";
 
 export default function App() {
+  const [appData, setAppData] = useState(() => getStoredData());
   const [selectedSocial, setSelectedSocial] = useState(null);
   const [showMoreSocials, setShowMoreSocials] = useState(false);
   const [shimmerKey, setShimmerKey] = useState(0);
   const [isReShimmering, setIsReShimmering] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Background sync: updates localStorage and app state whenever online/focused
+  useEffect(() => {
+    const cleanup = syncDataWhenOnline((freshData) => {
+      setAppData(freshData);
+    });
+    return cleanup;
+  }, []);
 
   const triggerCardShimmer = () => {
     setShimmerKey((prev) => prev + 1);
@@ -69,15 +77,15 @@ export default function App() {
   };
 
   // Initially display first 6 primary socials, reveal others when "See more" is toggled
+  const socialsList = appData.socials || [];
   const displayedSocials = showMoreSocials
-    ? SOCIALS_DATA
-    : SOCIALS_DATA.slice(0, 6);
+    ? socialsList
+    : socialsList.slice(0, 6);
+
+  const profile = appData.profile;
 
   return (
     <div className="page">
-      {/* Offline banner notification when internet is disconnected */}
-      <OfflineIndicator />
-
       {/* Screen-wide tactile touch ripple, vibration & micro-audio click */}
       <TouchFeedback />
 
@@ -106,18 +114,18 @@ export default function App() {
         </div>
 
         {/* Header Info */}
-        <h1 className="name">Ibrohimovich</h1>
-        <div className="handle">@ibrohimovich_o1</div>
+        <h1 className="name">{profile.name}</h1>
+        <div className="handle">{profile.handle}</div>
 
         {/* Status Indicator */}
         <div className="status-badge-container">
           <span className="status-badge">
             <span className="status-pulse-dot" />
-            Yangi loyihalar uchun ochiq
+            {profile.status}
           </span>
         </div>
 
-        {/* Corrected & Professional Full-Stack Bio */}
+        {/* Professional Full-Stack Bio */}
         <p className="bio">
           Full-Stack veb dasturchi. <strong>React.js</strong>, <strong>Node.js</strong> va{" "}
           <strong>PostgreSQL</strong> asosida zamonaviy interfeyslar, ma&apos;lumotlar bazasi va
@@ -126,19 +134,18 @@ export default function App() {
 
         {/* Tech skills pill tags */}
         <div className="tech-pills-row">
-          <span className="tech-pill">
-            <Sparkles size={11} /> React.js
-          </span>
-          <span className="tech-pill">Node.js</span>
-          <span className="tech-pill">PostgreSQL</span>
-          <span className="tech-pill">JavaScript</span>
+          {profile.skills?.map((skill, idx) => (
+            <span key={skill} className="tech-pill">
+              {idx === 0 && <Sparkles size={11} />} {skill}
+            </span>
+          ))}
         </div>
 
         {/* Socials section */}
         <div className="eyebrow-row">
           <div className="eyebrow">Ijtimoiy tarmoqlar</div>
           <span className="eyebrow-hint">
-            {displayedSocials.length} / {SOCIALS_DATA.length} ta tarmoq
+            {displayedSocials.length} / {socialsList.length} ta tarmoq
           </span>
         </div>
 
@@ -172,7 +179,7 @@ export default function App() {
             <span>
               {showMoreSocials
                 ? "Kamroq ko'rsatish"
-                : `Ko'proq ko'rish (${SOCIALS_DATA.length - 6} ta yangi tarmoq)`}
+                : `Ko'proq ko'rish (${socialsList.length - 6} ta yangi tarmoq)`}
             </span>
             <ChevronDown
               size={15}
@@ -182,10 +189,10 @@ export default function App() {
         </div>
 
         {/* Games section above projects */}
-        <GamesSection onModalClose={triggerCardShimmer} />
+        <GamesSection games={appData.games} onModalClose={triggerCardShimmer} />
 
         {/* Real projects section */}
-        <ProjectsSection />
+        <ProjectsSection projects={appData.projects} />
 
         <div className="footer-note">
           <span>© 2026 Ibrohimovich</span>

@@ -5,7 +5,7 @@ import { triggerTapFeedback } from "../utils/feedback";
 import { GameIcon } from "./GameIcons";
 import GameModal from "./GameModal";
 
-export default function GamesSection({ onModalClose }) {
+export default function GamesSection({ onModalClose, games = GAMES_DATA }) {
   const [selectedGame, setSelectedGame] = useState(null);
 
   const handleOpenGame = (game) => {
@@ -33,7 +33,7 @@ export default function GamesSection({ onModalClose }) {
       </div>
 
       <div className="games-social-grid">
-        {GAMES_DATA.map((game) => (
+        {games.map((game) => (
           <button
             key={game.id}
             id={`game-btn-${game.id}`}

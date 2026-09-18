@@ -8,7 +8,7 @@ import {
 import { PROJECTS_DATA } from "../data/projects";
 import { triggerTapFeedback } from "../utils/feedback";
 
-export default function ProjectsSection() {
+export default function ProjectsSection({ projects = PROJECTS_DATA }) {
   const getProjectIcon = (id) => {
     if (id === "fast-food") {
       return <UtensilsCrossed size={20} />;
@@ -27,11 +27,11 @@ export default function ProjectsSection() {
           <FolderGit2 size={15} className="inline-icon" />
           <span>Loyihalarim</span>
         </div>
-        <span className="eyebrow-hint">{PROJECTS_DATA.length} ta loyiha</span>
+        <span className="eyebrow-hint">{projects.length} ta loyiha</span>
       </div>
 
       <div className="projects-list">
-        {PROJECTS_DATA.map((project) => (
+        {projects.map((project) => (
           <a
             key={project.id}
             id={`project-card-${project.id}`}
