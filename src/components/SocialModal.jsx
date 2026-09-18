@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { X, ExternalLink, Copy, Check, Share2, ScanLine } from "lucide-react";
 import { triggerTapFeedback } from "../utils/feedback";
@@ -7,6 +8,17 @@ import { SocialIcon } from "./SocialIcons";
 export default function SocialModal({ social, onClose }) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
+  const [isCompact, setIsCompact] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 420 : true
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsCompact(window.innerWidth <= 420);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Close on Escape key
   useEffect(() => {
@@ -80,7 +92,7 @@ export default function SocialModal({ social, onClose }) {
     triggerTapFeedback("pop");
   };
 
-  return (
+  const modalContent = (
     <div
       id="social-modal-overlay"
       className="modal-overlay"
@@ -173,7 +185,7 @@ export default function SocialModal({ social, onClose }) {
             <div className="direct-qr-code-wrapper">
               <QRCodeSVG
                 value={social.url}
-                size={180}
+                size={isCompact ? 144 : 176}
                 bgColor="#ffffff"
                 fgColor="#0c0818"
                 level="H"
@@ -225,4 +237,8 @@ export default function SocialModal({ social, onClose }) {
       </div>
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }

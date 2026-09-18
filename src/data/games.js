@@ -1,0 +1,36 @@
+export const GAMES_DATA = [
+  {
+    id: "pubg",
+    name: "PUBG Mobile",
+    shortName: "PUBG",
+    genre: "Battle Royale",
+    color: "#F59E0B",
+    gradient: "linear-gradient(135deg, #f59e0b, #d97706, #b45309)",
+    glowColor: "rgba(245, 158, 11, 0.45)",
+    status: "Tez kunda",
+    locked: true,
+  },
+  {
+    id: "standoff",
+    name: "Standoff 2",
+    shortName: "Standoff 2",
+    genre: "Taktik FPS",
+    color: "#EF4444",
+    gradient: "linear-gradient(135deg, #ef4444, #dc2626, #991b1b)",
+    glowColor: "rgba(239, 68, 68, 0.45)",
+    status: "Tez kunda",
+    locked: true,
+  },
+  {
+    id: "fc",
+    name: "EA SPORTS FC",
+    shortName: "EA FC",
+    genre: "Futbol simulyatori",
+    color: "#10B981",
+    gradient: "linear-gradient(135deg, #10b981, #059669, #047857)",
+    glowColor: "rgba(16, 185, 129, 0.45)",
+    status: "Tez kunda",
+    locked: true,
+  },
+];
+

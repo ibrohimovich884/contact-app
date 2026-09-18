@@ -4,23 +4,28 @@ import { SOCIALS_DATA } from "./data/socials";
 import SocialModal from "./components/SocialModal";
 import TouchFeedback from "./components/TouchFeedback";
 import { SocialIcon } from "./components/SocialIcons";
-import PWAInstallButton from "./components/PWAInstallButton";
 import OfflineIndicator from "./components/OfflineIndicator";
+import GamesSection from "./components/GamesSection";
+import ProjectsSection from "./components/ProjectsSection";
 import { triggerTapFeedback } from "./utils/feedback";
 import {
-  TrendingUp,
-  Bot,
-  ExternalLink,
-  Code2,
   Share2,
+  ChevronDown,
+  Sparkles,
 } from "lucide-react";
 
 export default function App() {
   const [selectedSocial, setSelectedSocial] = useState(null);
+  const [showMoreSocials, setShowMoreSocials] = useState(false);
 
   const handleOpenSocial = (social) => {
     triggerTapFeedback("pop");
     setSelectedSocial(social);
+  };
+
+  const handleToggleMoreSocials = () => {
+    triggerTapFeedback("light");
+    setShowMoreSocials((prev) => !prev);
   };
 
   const handleShareApp = async () => {
@@ -45,29 +50,10 @@ export default function App() {
     }
   };
 
-  const PROJECTS = [
-    {
-      title: "Forex Trading Bot",
-      desc: "Avtomatlashtirilgan savdo strategiyalari & risk-menejment",
-      icon: <TrendingUp size={18} className="project-icon" />,
-      href: "https://github.com/ibrohimovich884",
-      status: "Aktiv",
-    },
-    {
-      title: "Telegram Signal Bot",
-      desc: "Bozor tahlili va real vaqt signallarini jo'natuvchi bot",
-      icon: <Bot size={18} className="project-icon" />,
-      href: "https://t.me/ibrohimovich_o1",
-      status: "Ishlamoqda",
-    },
-    {
-      title: "React Web Dashboard",
-      desc: "Savdo statistikasi va boshqaruv paneli interfeysi",
-      icon: <Code2 size={18} className="project-icon" />,
-      href: "https://github.com/ibrohimovich884",
-      status: "Yangi",
-    },
-  ];
+  // Initially display first 6 primary socials, reveal others when "See more" is toggled
+  const displayedSocials = showMoreSocials
+    ? SOCIALS_DATA
+    : SOCIALS_DATA.slice(0, 6);
 
   return (
     <div className="page">
@@ -80,20 +66,16 @@ export default function App() {
       <div className="glass-card">
         <div className="sheen" />
 
-        {/* Top bar with in-app PWA install button and share button */}
-        <div className="card-top-bar">
-          <PWAInstallButton />
-
-          <button
-            id="share-profile-btn"
-            className="card-share-trigger"
-            onClick={handleShareApp}
-            title="Sahifani ulashish"
-            aria-label="Sahifani ulashish"
-          >
-            <Share2 size={16} />
-          </button>
-        </div>
+        {/* Quick share button at top-right */}
+        <button
+          id="share-profile-btn"
+          className="card-share-trigger"
+          onClick={handleShareApp}
+          title="Sahifani ulashish"
+          aria-label="Sahifani ulashish"
+        >
+          <Share2 size={16} />
+        </button>
 
         {/* Profile Avatar */}
         <div className="avatar-wrap">
@@ -115,19 +97,33 @@ export default function App() {
           </span>
         </div>
 
+        {/* Corrected & Professional Full-Stack Bio */}
         <p className="bio">
-          Dasturchi &amp; algo-trading bilan qiziquvchi. Python, React va Forex
-          bot loyihalari ustida ishlayman.
+          Full-Stack veb dasturchi. <strong>React.js</strong>, <strong>Node.js</strong> va{" "}
+          <strong>PostgreSQL</strong> asosida zamonaviy interfeyslar, ma&apos;lumotlar bazasi va
+          yuqori tezlikdagi web ilovalar ishlab chiqaman.
         </p>
+
+        {/* Tech skills pill tags */}
+        <div className="tech-pills-row">
+          <span className="tech-pill">
+            <Sparkles size={11} /> React.js
+          </span>
+          <span className="tech-pill">Node.js</span>
+          <span className="tech-pill">PostgreSQL</span>
+          <span className="tech-pill">JavaScript</span>
+        </div>
 
         {/* Socials section */}
         <div className="eyebrow-row">
           <div className="eyebrow">Ijtimoiy tarmoqlar</div>
-          <span className="eyebrow-hint">Batafsil ko'rish uchun bosing</span>
+          <span className="eyebrow-hint">
+            {displayedSocials.length} / {SOCIALS_DATA.length} ta tarmoq
+          </span>
         </div>
 
         <div className="socials">
-          {SOCIALS_DATA.map((s) => (
+          {displayedSocials.map((s) => (
             <button
               key={s.id}
               id={`social-btn-${s.id}`}
@@ -145,40 +141,31 @@ export default function App() {
           ))}
         </div>
 
-        {/* Projects Section */}
-        <div className="eyebrow-row">
-          <div className="eyebrow">Loyihalarim</div>
-          <span className="eyebrow-hint">{PROJECTS.length} ta loyiha</span>
+        {/* See More / Show Less Button */}
+        <div className="see-more-wrap">
+          <button
+            id="toggle-more-socials-btn"
+            type="button"
+            className="see-more-btn"
+            onClick={handleToggleMoreSocials}
+          >
+            <span>
+              {showMoreSocials
+                ? "Kamroq ko'rsatish"
+                : `Ko'proq ko'rish (${SOCIALS_DATA.length - 6} ta yangi tarmoq)`}
+            </span>
+            <ChevronDown
+              size={15}
+              className={`see-more-icon ${showMoreSocials ? "rotated" : ""}`}
+            />
+          </button>
         </div>
 
-        <div className="projects">
-          {PROJECTS.map((p, i) => (
-            <a
-              key={p.title + i}
-              id={`project-card-${i}`}
-              className="project-card"
-              href={p.href}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => triggerTapFeedback("light")}
-            >
-              <div className="project-header">
-                <div className="project-icon-wrap">{p.icon}</div>
-                <span className="project-status-tag">{p.status}</span>
-              </div>
-              <div className="project-content">
-                <span className="project-title">{p.title}</span>
-                <span className="project-desc">{p.desc}</span>
-              </div>
-              <div className="project-footer">
-                <span className="project-num">0{i + 1}</span>
-                <span className="project-arrow">
-                  <ExternalLink size={14} />
-                </span>
-              </div>
-            </a>
-          ))}
-        </div>
+        {/* Games section above projects */}
+        <GamesSection />
+
+        {/* Real projects section */}
+        <ProjectsSection />
 
         <div className="footer-note">
           <span>© 2026 Ibrohimovich</span>
