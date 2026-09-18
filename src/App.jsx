@@ -17,10 +17,25 @@ import {
 export default function App() {
   const [selectedSocial, setSelectedSocial] = useState(null);
   const [showMoreSocials, setShowMoreSocials] = useState(false);
+  const [shimmerKey, setShimmerKey] = useState(0);
+  const [isReShimmering, setIsReShimmering] = useState(false);
+
+  const triggerCardShimmer = () => {
+    setShimmerKey((prev) => prev + 1);
+    setIsReShimmering(true);
+    setTimeout(() => {
+      setIsReShimmering(false);
+    }, 2900);
+  };
 
   const handleOpenSocial = (social) => {
     triggerTapFeedback("pop");
     setSelectedSocial(social);
+  };
+
+  const handleCloseSocial = () => {
+    setSelectedSocial(null);
+    triggerCardShimmer();
   };
 
   const handleToggleMoreSocials = () => {
@@ -63,8 +78,10 @@ export default function App() {
       {/* Screen-wide tactile touch ripple, vibration & micro-audio click */}
       <TouchFeedback />
 
-      <div className="glass-card">
-        <div className="sheen" />
+      <div className={`glass-card ${isReShimmering ? "card-re-shimmering" : ""}`}>
+        {/* Dynamic re-shimmer & periodic luxury light sweep */}
+        <div key={`sheen-${shimmerKey}`} className={`sheen ${isReShimmering ? "sheen-fresh" : ""}`} />
+        <div className="card-border-gleam" />
 
         {/* Quick share button at top-right */}
         <button
@@ -162,7 +179,7 @@ export default function App() {
         </div>
 
         {/* Games section above projects */}
-        <GamesSection />
+        <GamesSection onModalClose={triggerCardShimmer} />
 
         {/* Real projects section */}
         <ProjectsSection />
@@ -178,7 +195,7 @@ export default function App() {
       {selectedSocial && (
         <SocialModal
           social={selectedSocial}
-          onClose={() => setSelectedSocial(null)}
+          onClose={handleCloseSocial}
         />
       )}
     </div>

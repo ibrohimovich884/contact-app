@@ -32,11 +32,36 @@ export default function SocialModal({ social, onClose }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Prevent background scrolling when modal is open
+  // Comprehensive scroll lock and horizontal freeze when modal card is open
   useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyTouchAction = document.body.style.touchAction;
+    const originalHtmlTouchAction = document.documentElement.style.touchAction;
+
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    document.documentElement.style.touchAction = "none";
+
+    // Strictly intercept and prevent background touch drag / scroll leakage on mobile
+    const preventBackgroundScroll = (e) => {
+      const sheet = document.getElementById("social-modal-sheet");
+      if (!sheet || !sheet.contains(e.target)) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("touchmove", preventBackgroundScroll, {
+      passive: false,
+    });
+
     return () => {
-      document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.touchAction = originalBodyTouchAction;
+      document.documentElement.style.touchAction = originalHtmlTouchAction;
+      window.removeEventListener("touchmove", preventBackgroundScroll);
     };
   }, []);
 
@@ -128,9 +153,9 @@ export default function SocialModal({ social, onClose }) {
             <div>
               <div className="modal-title-row">
                 <h3 className="modal-title">{social.name}</h3>
-                <span className="modal-status-chip">
-                  <span className="live-dot" />
-                  {social.stats || "Faol"}
+                <span className={`modal-status-chip ${social.isEmpty ? "empty-status" : ""}`}>
+                  <span className={social.isEmpty ? "empty-dot" : "live-dot"} />
+                  {social.stats || (social.isEmpty ? "Bo'sh" : "Faol")}
                 </span>
               </div>
               <p className="modal-subtitle">{social.badge}</p>
@@ -150,31 +175,37 @@ export default function SocialModal({ social, onClose }) {
         {/* Nickname / Handle Card with Instant Copy */}
         <div className="nickname-box">
           <div className="nickname-info">
-            <span className="nickname-label">Nikneym / Profil</span>
-            <span className="nickname-value">{social.handle}</span>
+            <span className="nickname-label">
+              {social.id === "email" ? "Elektron pochta manzili" : "Nikneym / Profil"}
+            </span>
+            <span className="nickname-value">
+              {social.isEmpty ? "Kiritilmagan (bo'sh)" : social.handle}
+            </span>
           </div>
 
-          <button
-            id="copy-nickname-btn"
-            className={`copy-btn ${copied ? "copied" : ""}`}
-            onClick={handleCopyHandle}
-            title="Nikneymdan nusxa olish"
-          >
-            {copied ? (
-              <>
-                <Check size={15} />
-                <span>Nusxalandi!</span>
-              </>
-            ) : (
-              <>
-                <Copy size={15} />
-                <span>Nusxalash</span>
-              </>
-            )}
-          </button>
+          {!social.isEmpty && (
+            <button
+              id="copy-nickname-btn"
+              className={`copy-btn ${copied ? "copied" : ""}`}
+              onClick={handleCopyHandle}
+              title="Nusxa olish"
+            >
+              {copied ? (
+                <>
+                  <Check size={15} />
+                  <span>Nusxalandi!</span>
+                </>
+              ) : (
+                <>
+                  <Copy size={15} />
+                  <span>Nusxalash</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
 
-        {/* Direct QR Code display (Centered cleanly without extra tabs) */}
+        {/* Direct QR Code display */}
         <div className="direct-qr-container">
           <div className="direct-qr-frame">
             <div className="qr-scan-lens-corner tl" />
@@ -182,53 +213,100 @@ export default function SocialModal({ social, onClose }) {
             <div className="qr-scan-lens-corner bl" />
             <div className="qr-scan-lens-corner br" />
 
-            <div className="direct-qr-code-wrapper">
-              <QRCodeSVG
-                value={social.url}
-                size={isCompact ? 144 : 176}
-                bgColor="#ffffff"
-                fgColor="#0c0818"
-                level="H"
-                includeMargin={false}
-              />
-            </div>
+            {social.url ? (
+              <div className="direct-qr-code-wrapper">
+                <QRCodeSVG
+                  value={social.url}
+                  size={isCompact ? 144 : 176}
+                  bgColor="#ffffff"
+                  fgColor="#0c0818"
+                  level="H"
+                  includeMargin={false}
+                />
+              </div>
+            ) : (
+              <div
+                className="empty-qr-placeholder"
+                style={{
+                  width: isCompact ? 144 : 176,
+                  height: isCompact ? 144 : 176,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "16px",
+                  background: "rgba(255, 255, 255, 0.04)",
+                  borderRadius: "16px",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: "28px", marginBottom: "8px" }}>📭</div>
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "#f3f4f6" }}>
+                  Profil biriktirilmagan
+                </span>
+                <span style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.45)", marginTop: "4px" }}>
+                  Ushbu tarmoq hozircha bo'sh qoldirilgan
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="qr-guide-row">
             <ScanLine size={15} className="qr-guide-icon" />
             <span className="qr-guide-text">
-              Kamerani yo'naltirib darhol profilni oching
+              {social.url
+                ? social.id === "email"
+                  ? "QR kodni skanerlab darhol xat yuboring"
+                  : "Kamerani yo'naltirib darhol profilni oching"
+                : "Profil kiritilgandan so'ng QR kod paydo bo'ladi"}
             </span>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="modal-actions">
-          <a
-            id="direct-social-link-btn"
-            href={social.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleDirectClick}
-            className="direct-action-btn"
-            style={{
-              background: social.gradient,
-              boxShadow: `0 8px 24px -4px ${social.glowColor}`,
-            }}
-          >
-            <span>{social.directButtonText || `${social.name}'ga o'tish`}</span>
-            <ExternalLink size={17} />
-          </a>
+          {social.url ? (
+            <a
+              id="direct-social-link-btn"
+              href={social.url}
+              target={social.url.startsWith("mailto:") ? "_self" : "_blank"}
+              rel="noopener noreferrer"
+              onClick={handleDirectClick}
+              className="direct-action-btn"
+              style={{
+                background: social.gradient,
+                boxShadow: `0 8px 24px -4px ${social.glowColor}`,
+              }}
+            >
+              <span>{social.directButtonText || `${social.name}'ga o'tish`}</span>
+              <ExternalLink size={17} />
+            </a>
+          ) : (
+            <div
+              className="direct-action-btn empty-btn"
+              style={{
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                color: "rgba(255, 255, 255, 0.4)",
+                cursor: "default",
+                boxShadow: "none",
+              }}
+            >
+              <span>Profil hali biriktirilmagan (bo'sh)</span>
+            </div>
+          )}
 
-          <button
-            id="share-social-btn"
-            className="secondary-action-btn"
-            onClick={handleShare}
-            title="Havolani ulashish"
-          >
-            <Share2 size={16} />
-            <span>{shared ? "Nusxalandi!" : "Ulashish"}</span>
-          </button>
+          {social.url && (
+            <button
+              id="share-social-btn"
+              className="secondary-action-btn"
+              onClick={handleShare}
+              title="Havolani ulashish"
+            >
+              <Share2 size={16} />
+              <span>{shared ? "Nusxalandi!" : "Ulashish"}</span>
+            </button>
+          )}
         </div>
 
         <div className="modal-tip">

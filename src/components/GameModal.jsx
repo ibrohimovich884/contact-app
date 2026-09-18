@@ -17,11 +17,35 @@ export default function GameModal({ game, onClose }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Prevent background scrolling when modal is open
+  // Prevent background scrolling and horizontal gestures when modal is open
   useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyTouchAction = document.body.style.touchAction;
+    const originalHtmlTouchAction = document.documentElement.style.touchAction;
+
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    document.documentElement.style.touchAction = "none";
+
+    const preventBackgroundScroll = (e) => {
+      const sheet = document.getElementById("game-modal-sheet");
+      if (!sheet || !sheet.contains(e.target)) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("touchmove", preventBackgroundScroll, {
+      passive: false,
+    });
+
     return () => {
-      document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.touchAction = originalBodyTouchAction;
+      document.documentElement.style.touchAction = originalHtmlTouchAction;
+      window.removeEventListener("touchmove", preventBackgroundScroll);
     };
   }, []);
 

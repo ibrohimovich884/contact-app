@@ -5,7 +5,7 @@ import { triggerTapFeedback } from "../utils/feedback";
 import { GameIcon } from "./GameIcons";
 import GameModal from "./GameModal";
 
-export default function GamesSection() {
+export default function GamesSection({ onModalClose }) {
   const [selectedGame, setSelectedGame] = useState(null);
 
   const handleOpenGame = (game) => {
@@ -15,6 +15,9 @@ export default function GamesSection() {
 
   const handleCloseGame = () => {
     setSelectedGame(null);
+    if (onModalClose) {
+      onModalClose();
+    }
   };
 
   return (
